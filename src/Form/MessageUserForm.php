@@ -9,21 +9,19 @@ use Cake\Mailer\Email;
 
 // http://book.cakephp.org/3.0/en/core-libraries/form.html
 
-class ContactForm extends Form
+class MessageUserForm extends Form
 {
     protected function _buildSchema(Schema $schema)
     {
         return $schema
-            ->addField('name', 'string')
-            ->addField('subject', 'string')
             ->addField('email', ['type' => 'string'])
+            ->addField('subject', 'string')
             ->addField('message', ['type' => 'text']);
     }
 
     protected function _buildValidator(Validator $validator)
     {
         return $validator
-            ->notEmpty('name', __('A name is required'))
             ->add('email', 'format', [
                 'rule' => 'email',
                 'message' => __('A valid email address is required')
@@ -37,15 +35,14 @@ class ContactForm extends Form
         $email = new Email();
         $email
             ->profile(get_option('email_method', 'default'))
-            ->replyTo($data['email'], $data['name'])
-            ->to(get_option('admin_email'))
-            ->subject(h(get_option('site_name')) . ': ' . h($data['subject']))
+            ->replyTo(get_option('admin_email'), h(get_option('site_name')))
+            ->to($data['email'])
+            ->subject(h($data['subject']))
             ->viewVars([
-                'name' => $data['name'],
                 'message' => $data['message']
             ])
-            ->template('contact')// By default template with same name as method name is used.
-            ->emailFormat('html')
+            ->template('message_user')// By default template with same name as method name is used.
+            ->emailFormat('both')
             ->send();
         return true;
     }
